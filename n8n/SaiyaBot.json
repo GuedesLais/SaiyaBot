@@ -1,0 +1,154 @@
+{
+  "name": "SaiyaBot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "Imagine que você é o \"Arquiteto Digital\", um engenheiro de software e arquiteto de sistemas sênior com 20 anos de experiência virtual. Sua missão é desmistificar a tecnologia para desenvolvedores, profissionais de TI e entusiastas de IA.\n\nVocê domina desde os fundamentos da ciência da computação até as mais modernas arquiteturas de nuvem e agentes de IA autônomos.\n\n**Como você deve se comportar:**\n- **Fale como um especialista:** Use a terminologia técnica correta, mas sempre a explique de forma simples e com analogias.\n- **Seja prático:** Suas soluções devem ser realistas, pensando em escalabilidade, segurança e manutenção.\n- **Forneça código exemplar:** Seus exemplos de código são sempre limpos, eficientes e bem documentados.\n- **Seja um mentor:** Não dê apenas a resposta, ensine o conceito por trás dela para que o usuário aprenda de verdade.\n- **Abrangência:** Embora seu coração seja de um engenheiro, você tem conhecimento sobre uma vasta gama de assuntos e pode ajudar em qualquer dúvida."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -64
+      ],
+      "id": "f1293989-95b8-4230-9ca5-ad40bc4862e3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-preview-06-05",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        144
+      ],
+      "id": "bb063cec-9af2-4cd8-9a95-1f17f5b0cc48",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GuH7d9BB11K6qhvV",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        144
+      ],
+      "id": "8c99223d-9e13-4583-ad27-8bf94b7be9b6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a9b00a9c-5957-4dc3-a017-7d15103116f2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "d6502048-cdfc-425a-ae95-188850fb1f43",
+      "name": "Webhook",
+      "webhookId": "a9b00a9c-5957-4dc3-a017-7d15103116f2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n    \"reply\": {{ $json.output.output }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        528,
+        -64
+      ],
+      "id": "a8d20966-2b0a-4319-b370-74529a7cf694",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "e583a6b0-7780-4227-8eca-a54957ff90fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e1bede483ba8da7ea23d624b07c310397ae25b77fb6039d8cfab55f6ec6501bf"
+  },
+  "id": "g2cT1dfAvbWztPlJ",
+  "tags": []
+}

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/a9b00a9c-5957-4dc3-a017-7d15103116f2';
+const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook/a9b00a9c-5957-4dc3-a017-7d15103116f2';
 // --- Ícones em SVG para a interface ---
 
 const SendIcon = () => (
@@ -49,17 +50,19 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const chatEndRef = useRef(null); 
 
-  // --- Gemini API ---
-  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
-  const apiKey = ""; // A chave será injetada pelo ambiente, mantenha em branco.
+
 
   const callGeminiAPI = async (prompt, retries = 3) => {
+    
+    const fullUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
     try {
-        const response = await fetch(`${GEMINI_API_URL}${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
+        
+        const response = await fetch(fullUrl, {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+});
+
         if (!response.ok) {
             if (response.status === 429 && retries > 0) {
                  await new Promise(res => setTimeout(res, (4 - retries) * 1000));
@@ -98,17 +101,12 @@ function App() {
     setIsLoading(true);
 
     try {
-        // ===================================================================
-        // TODO: SUBSTITUA A SIMULAÇÃO ABAIXO PELA CHAMADA REAL AO N8N
-        // ===================================================================
        const response = await fetch(N8N_WEBHOOK_URL, {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-        // A chave aqui ('chatInput') deve ser a mesma
-        // que seu workflow n8n espera em {{ $json.body.chatInput }}
         message: question,
         sessionId: currentChatId
     })
@@ -118,8 +116,9 @@ if (!response.ok) {
     throw new Error(`Erro na rede: ${response.statusText}`);
 }
 
-const responseData = await response.json(); // Pega o JSON completo
-const botMessageText = responseData.response;
+const responseData = await response.json(); 
+console.log('Resposta recebida do n8n:', responseData); 
+const botMessageText = responseData.reply;
         const botMessage = { sender: 'bot', text: botMessageText };
         
         setChats(prev => ({
@@ -192,7 +191,7 @@ const chatBackgroundStyle = {
     <div style={{ fontFamily: "'Inter', sans-serif" }} className="flex h-screen w-screen text-gray-200 bg-gray-900">
      <aside
   className="w-64 p-4 flex flex-col space-y-4"
-  style={{ backgroundColor: '#f85B14' }} // ← aqui, dentro da tag
+  style={{ backgroundColor: '#f85B14' }} 
 >
   <h1 className="text-xl font-bold">SaiyaBot</h1>
   <button
@@ -284,7 +283,7 @@ const chatBackgroundStyle = {
   type="submit"
   className="p-2 rounded-full text-gray-300 disabled:cursor-not-allowed transition-colors"
   style={{
-    backgroundColor: '#072083',  // cor principal do botão
+    backgroundColor: '#072083',  
   }}
   onMouseOver={e => e.currentTarget.style.backgroundColor = '#3B82F6'} 
   onMouseOut={e => e.currentTarget.style.backgroundColor = '#072083'}
